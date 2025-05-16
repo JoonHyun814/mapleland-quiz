@@ -17,6 +17,6 @@ RUN rm get-pip.py
 RUN pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
 RUN pip install opencv-python
 RUN pip install numpy==1.24.1
-RUN pip install mss
+RUN pip install mss tqdm
 
 RUN apt-get update && apt-get install -y xvfb x11-utils x11-xserver-utils x11-apps xrandr

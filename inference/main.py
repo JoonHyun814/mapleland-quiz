@@ -13,13 +13,17 @@ from models.maple_models import ResNetClassifier
 # 모델 초기화 및 학습된 가중치 로드
 num_classes = 513
 model = ResNetClassifier(num_classes=num_classes)
-model.load_state_dict(torch.load("ckpt/test6.pt",map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("ckpt/test8.pt",map_location=torch.device('cpu')))
 model.eval()
 
 transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-        ])
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+])
 
 with open("inference/database_idx.json",encoding="UTF-8") as f:
     database_idx = json.load(f)

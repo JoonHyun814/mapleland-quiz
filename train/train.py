@@ -7,6 +7,7 @@ import torch.nn as nn
 from torch.utils.data import  DataLoader
 import glob
 from torch.optim.lr_scheduler import StepLR
+import tqdm
 
 
 # ---------------------
@@ -21,7 +22,7 @@ def train(model, dataloader, optimizer, epochs=10):
         correct = 0
         total = 0
 
-        for x, label in dataloader:
+        for x, label in tqdm.tqdm(dataloader):
             x, label = x.cuda(), label.cuda()
             output = model(x)  # (B, 513)
             loss = criterion(output, label)
@@ -41,12 +42,12 @@ def train(model, dataloader, optimizer, epochs=10):
         # ✅ 최고 정확도일 경우 저장
         if acc > best_acc:
             best_acc = acc
-            torch.save(model.state_dict(), f"ckpt/test7.pt")
+            torch.save(model.state_dict(), f"ckpt/test8.pt")
             print(f"✔️ Best model saved at epoch {epoch+1} (Acc: {acc:.2f}%)")
 
 
 if __name__ == "__main__":
-    image_paths = sorted(list(glob.glob("./all_images/*")))
+    image_paths = sorted(list(glob.glob("dataset/all_images/*")))
 
     dataset = maple_dataset.ImageClassificationDataset(image_paths)
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)

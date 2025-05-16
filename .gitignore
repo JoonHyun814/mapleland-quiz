@@ -3,8 +3,9 @@
 
 dataset/all_images
 trained
-models
+ckpt
 .vs
+test/test_images
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

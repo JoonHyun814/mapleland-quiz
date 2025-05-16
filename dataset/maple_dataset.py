@@ -6,55 +6,34 @@ import random
 import numpy as np
 from PIL import Image
 import random
+import cv2
 
 def make_random_background(size=(224, 224)):
-    w, h = size
-
-    # 배경 기본 색상: 랜덤하게 선택
-    base_color = np.array([
-        random.randint(50, 230),  # R
-        random.randint(50, 230),  # G
-        random.randint(50, 230)   # B
-    ], dtype=np.uint8)
-
-    # 전체 배경 배열 생성 (색상 단일톤)
-    bg = np.ones((h, w, 3), dtype=np.uint8) * base_color
-
-    # 줄무늬 추가
-    if random.random() < 0.5:
-        stripe_color = np.random.randint(0, 255, size=3)
-        for i in range(0, h, random.randint(10, 30)):
-            bg[i:i+2, :] = stripe_color
-
-    # 점 추가
-    if random.random() < 0.5:
-        for _ in range(random.randint(50, 150)):
-            x = random.randint(0, w - 1)
-            y = random.randint(0, h - 1)
-            bg[y, x] = np.random.randint(0, 255, size=3)
-
-    # 약한 노이즈 섞기
-    if random.random() < 0.5:
-        noise = np.random.randint(0, 30, (h, w, 3), dtype=np.uint8)
-        bg = np.clip(bg + noise, 0, 255)
-
-    return Image.fromarray(bg)
+    bg = cv2.imread("dataset/augmentation_asset.png")
+    bg = Image.fromarray(cv2.cvtColor(bg, cv2.COLOR_BGR2RGB)).resize(size)
+    return bg
 
 def composite_foreground_with_background(foreground: Image.Image, background: Image.Image):
     foreground = foreground.convert("RGBA")
-    background = background.convert("RGBA").resize(foreground.size)
+    background = background.convert("RGBA")
     
     bg_w, bg_h = background.size
-    scale = random.uniform(0.6,0.9)
-    new_w = int(bg_w * scale)
-    new_h = int(foreground.height * (new_w / foreground.width))  # 비율 유지
+    fg_w, fg_h = foreground.size
+    a = (224*min(fg_h,fg_w)/max(fg_w,fg_h))/((fg_h*fg_w)**(1/2))
+    new_w = int(fg_w * a)
+    new_h = int(fg_h * a)
+    resized_foreground = foreground.resize((new_w, new_h), resample=Image.BICUBIC)
+
+    scale = random.uniform(0.55,0.75)
+    new_w = int(new_w * scale)
+    new_h = int(new_h * scale)
     resized_foreground = foreground.resize((new_w, new_h), resample=Image.BICUBIC)
     
     # 랜덤 위치 계산
     max_x = bg_w - new_w
     max_y = bg_h - new_h
-    x_offset = random.randint(0, max_x)
-    y_offset = random.randint(0, max_y)
+    x_offset = random.randint(int(max_x*2/5), int(max_x*3/5))
+    y_offset = random.randint(int(max_y*2/8), int(max_y*3/8))
     
     canvas = Image.new("RGBA", background.size, (0, 0, 0, 0))
     canvas.paste(resized_foreground, (x_offset, y_offset), resized_foreground)
@@ -72,10 +51,22 @@ class ImageClassificationDataset(Dataset):
         self.image_paths = image_paths
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
-            transforms.RandomResizedCrop(224, scale=(0.6, 1.0)),
-            transforms.RandomAffine(degrees=15, translate=(0.1, 0.1)),
-            transforms.RandomHorizontalFlip(),
+            transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
+            transforms.RandomAffine(degrees=7, translate=(0.1, 0.1)),
             transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+
+        self.evel_transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
         ])
 
     def __len__(self):
