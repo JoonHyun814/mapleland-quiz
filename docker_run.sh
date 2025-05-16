@@ -1,0 +1,1 @@
+docker run -it --name maple-quiz --gpus all  --env DISPLAY=host.docker.internal:0.0  -v "C:\Users\dlwns\Documents\Projects\mapleland_speedquiz":/workspace --env QT_X11_NO_MITSHM=1   nvidia/cuda:11.7.1-devel-ubuntu20.04 /bin/bash
