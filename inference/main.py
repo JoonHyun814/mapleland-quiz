@@ -8,12 +8,12 @@ import time
 import json
 import torch
 from torchvision import transforms
-from models.maple_models import ResNetClassifier
+from models.maple_models import ResNetClassifier, EfficientNetClassifier
 
 # 모델 초기화 및 학습된 가중치 로드
 num_classes = 513
-model = ResNetClassifier(num_classes=num_classes)
-model.load_state_dict(torch.load("ckpt/test9.pt",map_location=torch.device('cpu')))
+model = EfficientNetClassifier(num_classes=num_classes)
+model.load_state_dict(torch.load("ckpt/test11.pt",map_location=torch.device('cpu')))
 model.eval()
 
 transform = transforms.Compose([
