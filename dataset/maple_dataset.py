@@ -43,6 +43,44 @@ def composite_foreground_with_background(foreground: Image.Image, background: Im
     return composite.convert("RGB")
 
 
+def add_doodle(image, num_lines=5, num_circles=3, num_dots=20):
+    img = image.copy()
+    h, w = img.shape[:2]
+
+    if random.random()<0.2:
+        # 랜덤 선 그리기
+        for _ in range(num_lines):
+            pt1 = (random.randint(0, w), random.randint(0, h))
+            pt2 = (random.randint(0, w), random.randint(0, h))
+            color = tuple([random.randint(0, 255) for _ in range(3)])
+            thickness = random.randint(1, 3)
+            cv2.line(img, pt1, pt2, color, thickness)
+    if random.random()<0.2:
+        # 랜덤 원 그리기
+        for _ in range(num_circles):
+            center = (random.randint(0, w), random.randint(0, h))
+            radius = random.randint(5, 20)
+            color = tuple([random.randint(0, 255) for _ in range(3)])
+            cv2.circle(img, center, radius, color, -1)
+    if random.random()<0.2:
+        # 랜덤 점 찍기
+        for _ in range(num_dots):
+            x = random.randint(0, w-1)
+            y = random.randint(0, h-1)
+            color = tuple([random.randint(0, 255) for _ in range(3)])
+            img[y, x] = color
+
+    return img
+
+
+class DoodleAugment:
+    def __call__(self, img_pil):
+        img_cv = np.array(img_pil)[:, :, ::-1]  # PIL → BGR
+        img_cv = add_doodle(img_cv)
+        img_pil = Image.fromarray(img_cv[:, :, ::-1])  # BGR → RGB → PIL
+        return img_pil
+
+
 # ---------------------
 # 1. 데이터셋 정의
 # ---------------------
@@ -51,8 +89,9 @@ class ImageClassificationDataset(Dataset):
         self.image_paths = image_paths
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
-            transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
-            transforms.RandomAffine(degrees=7, translate=(0.1, 0.1)),
+            transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
+            transforms.RandomAffine(degrees=3, translate=(0.1, 0.1)),
+            DoodleAugment(),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],

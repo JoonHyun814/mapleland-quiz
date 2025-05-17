@@ -2,3 +2,5 @@ torch
 torchvision
 mss
 opencv-python
+requests
+beautifulsoup4
