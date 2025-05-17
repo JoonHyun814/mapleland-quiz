@@ -24,7 +24,7 @@ def composite_foreground_with_background(foreground: Image.Image, background: Im
     new_h = int(fg_h * a)
     resized_foreground = foreground.resize((new_w, new_h), resample=Image.BICUBIC)
 
-    scale = random.uniform(0.55,0.75)
+    scale = random.uniform(0.3,0.6)
     new_w = int(new_w * scale)
     new_h = int(new_h * scale)
     resized_foreground = foreground.resize((new_w, new_h), resample=Image.BICUBIC)
@@ -33,7 +33,7 @@ def composite_foreground_with_background(foreground: Image.Image, background: Im
     max_x = bg_w - new_w
     max_y = bg_h - new_h
     x_offset = random.randint(int(max_x*2/5), int(max_x*3/5))
-    y_offset = random.randint(int(max_y*2/8), int(max_y*3/8))
+    y_offset = random.randint(int(max_y*4/9), int(max_y*5/9))
     
     canvas = Image.new("RGBA", background.size, (0, 0, 0, 0))
     canvas.paste(resized_foreground, (x_offset, y_offset), resized_foreground)
@@ -93,10 +93,10 @@ class ImageClassificationDataset(Dataset):
             transforms.RandomAffine(degrees=3, translate=(0.1, 0.1)),
             DoodleAugment(),
             transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225]
-            )
+            # transforms.Normalize(
+            #     mean=[0.485, 0.456, 0.406],
+            #     std=[0.229, 0.224, 0.225]
+            # )
         ])
 
         self.evel_transform = transforms.Compose([

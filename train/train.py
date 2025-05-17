@@ -9,6 +9,18 @@ import glob
 from torch.optim.lr_scheduler import StepLR
 import tqdm
 
+def freeze_base_model(model):
+    for param in model.model.blocks.parameters():
+        param.requires_grad = False
+    for param in model.model.conv_head.parameters():
+        param.requires_grad = False
+    for param in model.model.bn2.parameters():
+        param.requires_grad = False
+
+def unfreeze_base_model(model):
+    for param in model.model.parameters():
+        param.requires_grad = True
+
 
 # ---------------------
 # 학습 루프
@@ -17,6 +29,23 @@ def train(model, dataloader, optimizer, epochs=10):
     model.train()
     criterion = nn.CrossEntropyLoss()
     best_acc = 0
+
+    # 1단계 wormup: 분류기만 학습
+    print("start warmming up")
+    freeze_base_model(model)
+    for epoch in range(5):
+        model.train()
+        for images, labels in tqdm.tqdm(dataloader):
+            images, labels = images.cuda(), labels.cuda()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+    # 2단계: 전체 모델 fine-tune
+    unfreeze_base_model(model)
     for epoch in range(epochs):
         total_loss = 0
         correct = 0
@@ -42,7 +71,7 @@ def train(model, dataloader, optimizer, epochs=10):
         # ✅ 최고 정확도일 경우 저장
         if acc > best_acc:
             best_acc = acc
-            torch.save(model.state_dict(), f"ckpt/test11.pt")
+            torch.save(model.state_dict(), f"ckpt/test12.pt")
             print(f"✔️ Best model saved at epoch {epoch+1} (Acc: {acc:.2f}%)")
 
 

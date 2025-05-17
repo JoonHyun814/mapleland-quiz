@@ -13,7 +13,7 @@ from models.maple_models import ResNetClassifier, EfficientNetClassifier
 # 모델 초기화 및 학습된 가중치 로드
 num_classes = 513
 model = EfficientNetClassifier(num_classes=num_classes)
-model.load_state_dict(torch.load("ckpt/test11.pt",map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("ckpt/test12.pt",map_location=torch.device('cpu')))
 model.eval()
 
 transform = transforms.Compose([
