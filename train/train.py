@@ -71,7 +71,7 @@ def train(model, dataloader, optimizer, epochs=10):
         # ✅ 최고 정확도일 경우 저장
         if acc > best_acc:
             best_acc = acc
-            torch.save(model.state_dict(), f"ckpt/test12.pt")
+            torch.save(model.state_dict(), f"ckpt/test15.pt")
             print(f"✔️ Best model saved at epoch {epoch+1} (Acc: {acc:.2f}%)")
 
 
@@ -85,4 +85,4 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     scheduler = StepLR(optimizer, step_size=10, gamma=0.8)
 
-    train(model, dataloader, optimizer, epochs=100)
+    train(model, dataloader, optimizer, epochs=50)

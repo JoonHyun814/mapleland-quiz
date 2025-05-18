@@ -7,9 +7,22 @@ import numpy as np
 from PIL import Image
 import random
 import cv2
+import torchvision.transforms.functional as F
 
 def make_random_background(size=(224, 224)):
-    bg = cv2.imread("dataset/augmentation_asset.png")
+    if random.random() < 0.5:
+        w, h = size
+        # 배경 기본 색상: 랜덤하게 선택
+        base_color = np.array([
+            random.randint(50, 230),  # R
+            random.randint(50, 230),  # G
+            random.randint(50, 230)   # B
+        ], dtype=np.uint8)
+
+        # 전체 배경 배열 생성 (색상 단일톤)
+        bg = np.ones((h, w, 3), dtype=np.uint8) * base_color
+    else:
+        bg = cv2.imread("dataset/augmentation_asset.png")
     bg = Image.fromarray(cv2.cvtColor(bg, cv2.COLOR_BGR2RGB)).resize(size)
     return bg
 
@@ -72,6 +85,16 @@ def add_doodle(image, num_lines=5, num_circles=3, num_dots=20):
 
     return img
 
+class RandomResize:
+    def __init__(self, min_size=128, max_size=224):
+        self.min_size = min_size
+        self.max_size = max_size
+
+    def __call__(self, img):
+        new_width = random.randint(self.min_size, self.max_size)
+        new_height = random.randint(self.min_size, self.max_size)
+        return img.resize((new_width, new_height), Image.BILINEAR)
+
 
 class DoodleAugment:
     def __call__(self, img_pil):
@@ -80,6 +103,35 @@ class DoodleAugment:
         img_pil = Image.fromarray(img_cv[:, :, ::-1])  # BGR → RGB → PIL
         return img_pil
 
+class RandomResizeAndRandomPad:
+    def __init__(self, min_size=256, max_size=512, target_size=512, fill=0):
+        self.min_size = min_size
+        self.max_size = max_size
+        self.target_size = target_size
+        self.fill = fill
+
+    def __call__(self, img):
+        w, h = img.size
+
+        # 1. 랜덤 크기 결정
+        new_w = random.randint(self.min_size, self.max_size)
+        new_h = random.randint(self.min_size, self.max_size)
+        img = F.resize(img, (new_h, new_w))
+
+        # 2. 패딩 사이즈 계산
+        pad_w_total = self.target_size - new_w
+        pad_h_total = self.target_size - new_h
+
+        # 랜덤하게 padding 분배
+        pad_left = random.randint(0, pad_w_total)
+        pad_top = random.randint(0, pad_h_total)
+        pad_right = pad_w_total - pad_left
+        pad_bottom = pad_h_total - pad_top
+
+        # 3. 패딩 적용
+        img = F.pad(img, [pad_left, pad_top, pad_right, pad_bottom], fill=self.fill)
+
+        return img
 
 # ---------------------
 # 1. 데이터셋 정의
@@ -89,14 +141,15 @@ class ImageClassificationDataset(Dataset):
         self.image_paths = image_paths
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
-            transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
+            # transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
+            RandomResizeAndRandomPad(min_size=128, max_size=224, target_size=224, fill=random.randint(0, 255)),
             transforms.RandomAffine(degrees=3, translate=(0.1, 0.1)),
             DoodleAugment(),
             transforms.ToTensor(),
-            # transforms.Normalize(
-            #     mean=[0.485, 0.456, 0.406],
-            #     std=[0.229, 0.224, 0.225]
-            # )
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
         ])
 
         self.evel_transform = transforms.Compose([

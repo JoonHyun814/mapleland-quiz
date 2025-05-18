@@ -13,7 +13,7 @@ from models.maple_models import ResNetClassifier, EfficientNetClassifier
 # 모델 초기화 및 학습된 가중치 로드
 num_classes = 513
 model = EfficientNetClassifier(num_classes=num_classes)
-model.load_state_dict(torch.load("ckpt/test12.pt",map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("ckpt/test15.pt",map_location=torch.device('cpu')))
 model.eval()
 
 transform = transforms.Compose([
@@ -90,7 +90,7 @@ while True:
     screenshot = sct.grab(monitor)
     img = np.array(screenshot)[:, :, :3].copy()
     
-    pil_img = Image.fromarray(img)
+    pil_img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
     tensor_img = transform(pil_img)
     
     pred = model(tensor_img.unsqueeze(0))
@@ -100,10 +100,9 @@ while True:
     
     label = f"{database_idx[str(most_similar_index)]}"
 
-    img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    draw = ImageDraw.Draw(img_pil)
+    draw = ImageDraw.Draw(pil_img)
     draw.text((50, 50), label, font=font, fill=(255, 0, 0))
-    img = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
+    img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
     cv2.imshow("Live Classification", img)
     time.sleep(1)
     

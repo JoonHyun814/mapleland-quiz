@@ -17,7 +17,7 @@ class ResNetClassifier(nn.Module):
 class EfficientNetClassifier(nn.Module):
     def __init__(self, num_classes=513):
         super().__init__()
-        self.model = timm.create_model("efficientnet_b5", pretrained=True)
+        self.model = timm.create_model("efficientnet_b0", pretrained=True)
         
         # 기존 분류기 레이어 교체
         in_features = self.model.get_classifier().in_features
