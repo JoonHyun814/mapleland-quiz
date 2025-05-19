@@ -22,4 +22,6 @@ python inference/main.py
 3. q로 프로그램 종료
 
 ## demo
-![시연 영상](assets/inference_demo.mp4)
+
+https://github.com/user-attachments/assets/5cad1b8d-fbed-4543-a819-1deee98f5651
+
