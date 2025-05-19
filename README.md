@@ -20,3 +20,6 @@ python inference/main.py
 1. 모니터 선택 (0: 모니터 전체, 1: 메인 모니터, 2: 듀얼 모니터, 3 ...)
 2. 영역 선택 후 s 키로 확정 (못바꿈 주의)
 3. q로 프로그램 종료
+
+## demo
+![시연 영상](assets/inference_demo.mp4)
